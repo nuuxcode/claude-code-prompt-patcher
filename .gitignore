@@ -1,3 +1,5 @@
 *.backup
 *.log
 .DS_Store
+logs/
+.build-ok

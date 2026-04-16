@@ -65,6 +65,8 @@ The `--watch` flag installs a launchd agent that watches `cli.js` itself. When `
 - Plist path: `~/Library/LaunchAgents/com.user.claude-code-patcher-v2.plist`
 - Log: `~/.claude/patch.log`
 
+**macOS sandbox auto-fix**: launchd agents on macOS cannot execute scripts from `~/Downloads`, `~/Desktop`, or `~/Documents` (blocked by the Transparency, Consent, and Control framework unless the parent has Full Disk Access). When you run `--watch`, the script **auto-copies itself to `~/.local/bin/claude-code-patcher`** and points the plist there. The original clone location can then be deleted safely — the watcher runs from `~/.local/bin/`.
+
 **Self-loop prevention**: the patcher only writes cli.js when patches were actually applied (not on already-patched files), so the watcher fires once per upgrade and then settles.
 
 ## Integrating with an updater script
@@ -80,14 +82,16 @@ The patcher handles both "fresh install" (applies all patches) and "already late
 
 ## Shell aliases (optional convenience)
 
-Add to `~/.zshrc` or `~/.bashrc`:
+After running `--watch` once (which copies the script to `~/.local/bin/`), add to `~/.zshrc` or `~/.bashrc`:
 
 ```bash
-alias dryruncc="/path/to/patch-claude-code.sh --dry-run"
-alias patchcc="/path/to/patch-claude-code.sh"
-alias checkcc="/path/to/patch-claude-code.sh --check"
-alias restorecc="/path/to/patch-claude-code.sh --restore"
+alias dryruncc="$HOME/.local/bin/claude-code-patcher --dry-run"
+alias patchcc="$HOME/.local/bin/claude-code-patcher"
+alias checkcc="$HOME/.local/bin/claude-code-patcher --check"
+alias restorecc="$HOME/.local/bin/claude-code-patcher --restore"
 ```
+
+If you haven't run `--watch`, you can either run it once (recommended — fixes the canonical install location) or point the aliases at your clone location directly.
 
 ## How it works
 

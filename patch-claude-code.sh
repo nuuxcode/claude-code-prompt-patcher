@@ -267,6 +267,18 @@ case "$MODE" in
     ;;
 
   --watch)
+    # macOS sandbox fix: launchd agents cannot execute scripts from
+    # ~/Downloads, ~/Desktop, or ~/Documents without Full Disk Access.
+    # Auto-copy the script to ~/.local/bin/ if it's not already there.
+    LOCAL_BIN="$HOME/.local/bin/claude-code-patcher"
+    if [[ "$SCRIPT_PATH" != "$LOCAL_BIN" ]]; then
+      mkdir -p "$HOME/.local/bin"
+      cp "$SCRIPT_PATH" "$LOCAL_BIN"
+      chmod +x "$LOCAL_BIN"
+      echo "Copied script to $LOCAL_BIN (macOS blocks launchd agents from running scripts in ~/Downloads, ~/Desktop, ~/Documents)"
+      SCRIPT_PATH="$LOCAL_BIN"
+    fi
+
     # First apply patches
     "$SCRIPT_PATH"
     echo ""
